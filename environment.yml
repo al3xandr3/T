@@ -1,0 +1,6 @@
+name: T
+dependencies:
+- python
+- pandas
+- jupyter
+- pytest
