@@ -1,9 +1,9 @@
 
 # T is for Table
 
-T makes Pandas more intuitive while extending it with DataScience tools. In particular, Bootstrap ReSampling methods (a.k.a [Hacker Statistics](https://speakerdeck.com/jakevdp/statistics-for-hackers))
+T makes Pandas more intuitive while extending it further with DataScience tools. In particular, Bootstrap ReSampling methods (a.k.a [Hacker Statistics](https://speakerdeck.com/jakevdp/statistics-for-hackers))
 
-Under the covers it uses pandas dataframe for speed and for its rich library, while extending it further.
+Under the covers it uses Pandas dataframe for speed and for its rich library.
 
 ## Basic Usage
 
