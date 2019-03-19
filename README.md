@@ -47,3 +47,8 @@ including plotting it:
 
 ![ci_mean](docs/ci_mean.png)
 
+
+## Notebook of example usage
+
+https://github.com/al3xandr3/Data-Science-ipynb/blob/master/T.ipynb
+
