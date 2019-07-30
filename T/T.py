@@ -108,6 +108,8 @@ class T(pd.DataFrame):
     def group(self, column):
         return T(self[column].value_counts())
 
+    def count(self, column):
+        return len( np.unique( self[column] ))
 
     def showna(self):
         return sns.heatmap(self.isnull(),yticklabels=False,cbar=False,cmap='viridis')
@@ -274,14 +276,15 @@ class T(pd.DataFrame):
 
     ########################################
     # Confidence Interval
-    def ci_mean(self, column1):
+    def ci_mean(self, column1, withChart=True):
         res = stats.bs_mean_95ci( T(self).column(column1) )
 
         # plot
-        resampled_proportions = T(res["Bootstrap Samples"], columns=['Bootstrap Samples'])
-        resampled_proportions.histogram('Bootstrap Samples')
-        _ = plt.plot([res["95% conf int of mean"][0], res["95% conf int of mean"][1]], [0, 0], color='yellow', lw=8)
-        _ = plt.plot([res["mean"]], [0.05], marker='o', markersize=3, color="red")
+        if (withChart):
+            resampled_proportions = T(res["Bootstrap Samples"], columns=['Bootstrap Samples'])
+            resampled_proportions.histogram('Bootstrap Samples')
+            _ = plt.plot([res["95% conf int of mean"][0], res["95% conf int of mean"][1]], [0, 0], color='yellow', lw=8)
+            _ = plt.plot([res["mean"]], [0.05], marker='o', markersize=3, color="red")
 
         return ({  
          "mean": res["mean"]
@@ -289,14 +292,15 @@ class T(pd.DataFrame):
     })
 
 
-    def ci_median(self, column1):
+    def ci_median(self, column1, withChart=True):
         res = stats.bs_median_95ci( T(self).column(column1) )
 
         # plot
-        resampled_proportions = T(res["Bootstrap Samples"], columns=['Bootstrap Samples'])
-        resampled_proportions.histogram('Bootstrap Samples')
-        _ = plt.plot([res["95% conf int of median"][0], res["95% conf int of median"][1]], [0, 0], color='yellow', lw=8)
-        _ = plt.plot([res["median"]], [0.05], marker='o', markersize=3, color="red")
+        if (withChart):
+            resampled_proportions = T(res["Bootstrap Samples"], columns=['Bootstrap Samples'])
+            resampled_proportions.histogram('Bootstrap Samples')
+            _ = plt.plot([res["95% conf int of median"][0], res["95% conf int of median"][1]], [0, 0], color='yellow', lw=8)
+            _ = plt.plot([res["median"]], [0.05], marker='o', markersize=3, color="red")
 
         return ({  
          "median": res["median"]
@@ -304,7 +308,7 @@ class T(pd.DataFrame):
         })
         
 
-    def ci_proportion(self, column1, repetitions=5000):
+    def ci_proportion(self, column1, repetitions=5000, withChart=True):
     
         just_one_column = T(self).select(column1)
         proportions = []
@@ -319,10 +323,11 @@ class T(pd.DataFrame):
         right = np.percentile(proportions, 97.5)
 
         ## plot
-        resampled_proportions = T(proportions, columns=['Bootstrap Sample Proportion'])
-        resampled_proportions.histogram('Bootstrap Sample Proportion')
-        _ = plt.plot([left, right], [0, 0], color='yellow', lw=8)
-        _ = plt.plot([np.count_nonzero(T(self).column(column1) ) / len(T(self).column(column1))], [0.05], marker='o', markersize=3, color="red")
+        if (withChart):
+            resampled_proportions = T(proportions, columns=['Bootstrap Sample Proportion'])
+            resampled_proportions.histogram('Bootstrap Sample Proportion')
+            _ = plt.plot([left, right], [0, 0], color='yellow', lw=8)
+            _ = plt.plot([np.count_nonzero(T(self).column(column1) ) / len(T(self).column(column1))], [0.05], marker='o', markersize=3, color="red")
 
         return {
             "Proportion of 1s": np.count_nonzero(T(self).column(column1) ) / len(T(self).column(column1))
