@@ -108,6 +108,8 @@ class T(pd.DataFrame):
     def group(self, column):
         return T(self[column].value_counts())
 
+    def count(self, column):
+        return len( np.unique( self[column] ))
 
     def showna(self):
         return sns.heatmap(self.isnull(),yticklabels=False,cbar=False,cmap='viridis')
