@@ -1574,7 +1574,7 @@ def plt_1ecdf(dta1, _xlabel=''):
     _ = plt.xlabel(_xlabel)
     _ = plt.ylabel('ECDF')
 
-    plt.show()
+    #plt.show()
 
 
 
@@ -1594,7 +1594,7 @@ def plt_2ecdf(dta1, dta2, legend1='', legend2='', _xlabel=''):
     _ = plt.xlabel(_xlabel)
     _ = plt.ylabel('ECDF')
 
-    plt.show()
+    #plt.show()
 
 
 
