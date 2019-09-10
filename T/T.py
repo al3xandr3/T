@@ -118,7 +118,7 @@ class T(pd.DataFrame):
     def sort(self, col, ascending=True):
         return T(self.sort_values(col, ascending=ascending))
 
-
+    ##
     def variance(self, column1):
         return np.var( T(self).column(column1) )
 
@@ -128,9 +128,14 @@ class T(pd.DataFrame):
     def avg(self, column1):
         return np.mean( T(self).column(column1) )
 
+    def average(self, column1):
+        return T(self).avg(self, column1) )
+
     def std(self, column1):
         return np.std( T(self).column(column1) ) 
 
+    def sum(self, column1):
+        return np.sum( T(self).column(column1) ) 
 
     ########################################
     # Confidence Interval
@@ -242,7 +247,11 @@ class T(pd.DataFrame):
                             #,"avg: {0:.1f} \nmedian: {1:.1f} \ncount: {2:.1f}".format(  T(_agg).column("avg")[i], T(_agg).column("median")[i], T(_agg).column("count")[i]  )
                             ,"min: {0:.1f} \nmax: {1:.1f} \navg: {2:.1f} \nmed: {3:.1f}".format( T(_agg).column("min")[i], T(_agg).column("max")[i], T(_agg).column("avg")[i], T(_agg).column("median")[i], )
                             #," {0:.1f}".format(  T(_agg).column("avg")[i] )
-                            , color='blue', fontweight='bold')
+                            #, color='blue'
+                            , fontweight='bold')
+            plt.ylabel("Average")
+            plt.xlabel("Deciles" + " of (ascending) " + column1)
+            #plt.title('Decile')
 
         return _agg
 
@@ -509,7 +518,8 @@ class T(pd.DataFrame):
         return Image(graph.create_png())
 
 
-
+# to make T also accessable as t, an alias
+t = T
 
 
 if __name__ == "__main__":
