@@ -3,9 +3,9 @@
 import pandas    as pd
 import numpy     as np
 import operator  as op
-import T._stats   as stats
+import T._stats          as stats
 import matplotlib.pyplot as plt
-import seaborn   as sns
+import seaborn           as sns
 
 
 # http://data8.org/datascience/_modules/datascience/tables.html#Table.to_df
@@ -129,7 +129,7 @@ class T(pd.DataFrame):
         return np.mean( T(self).column(column1) )
 
     def average(self, column1):
-        return T(self).avg(self, column1) )
+        return T(self).avg(self, column1)
 
     def std(self, column1):
         return np.std( T(self).column(column1) ) 
