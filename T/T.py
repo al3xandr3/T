@@ -401,33 +401,55 @@ class T(pd.DataFrame):
         from sklearn import metrics
         from sklearn.metrics import confusion_matrix
         confm = confusion_matrix(actuals, predicted)
+        tn, fp, fn, tp = confm.ravel()
+
+        cmtx = pd.DataFrame(
+            confm, 
+            index=['Actual: No', 'Actual: Yes'], 
+            columns=['Pred: No', 'Pred: Yes'] )
+
+        #Total sum per column: 
+        cmtx.loc['total',:]= cmtx.sum(axis=0)
+
+        #Total sum per row: 
+        cmtx.loc[:,'total'] = cmtx.sum(axis=1)
+
+        reference = {'Pred: No': ['TN', 'FP'], 'Pred: Yes': ['FN', 'TP']}
+        reference_pd = pd.DataFrame.from_dict(reference)
+        reference_pd.index=['Actual: No', 'Actual: Yes']
+
+        prec = tp/(tp+fp)
+        rec  = tp/(tp+fn)
+        p = 'Precision (=TP/(TP+FP))                              : {}'.format(prec)
+        r = 'Recall    (=TP/(TP+FN))                              : {}'.format(rec)
+        f1= 'F1-score  (=2*(Precision*Recall)/(Precision+Recall)) : {}'.format(2*(prec*rec)/(prec+rec))
+        ac= 'Accuracy  (=(TP+TN)/Total)                           : {}'.format((tp+tn)/(tp+tn+fp+fn))
 
         # plot
-        class_names=[0,1] # name  of classes
-        fig, ax = plt.subplots()
-        tick_marks = np.arange(len(class_names))
-        plt.xticks(tick_marks, class_names)
-        plt.yticks(tick_marks, class_names)
-        # create heatmap
-        #plt.rcParams['font.size'] = 16
-        sns.set(font_scale=1.5)
-        #plt.rcParams['figure.figsize'] = 5,3
-        #plt.figure(figsize=(16, 6))
-        sns.heatmap(pd.DataFrame(confm), annot=True, cmap="YlGnBu" ,fmt=',')
-        ax.xaxis.set_label_position("top")
-        plt.tight_layout()
-        plt.title('Confusion matrix', y=1.1)
-        plt.ylabel('Actual label')
-        plt.xlabel('Predicted label')
+        #class_names=[0,1] # name  of classes
+        #fig, ax = plt.subplots()
+        #tick_marks = np.arange(len(class_names))
+        #plt.xticks(tick_marks, class_names)
+        #plt.yticks(tick_marks, class_names)
+        ## create heatmap
+        ##plt.rcParams['font.size'] = 16
+        ##sns.set(font_scale=1.5)
+        ##plt.rcParams['figure.figsize'] = 5,3
+        ##plt.figure(figsize=(16, 6))
+        #sns.heatmap(pd.DataFrame(confm), annot=True, cmap="YlGnBu" ,fmt=',', annot_kws=#{"size": 15, "ha": 'center',"va": 'center'})
+        ##ax.xaxis.set_label_position("top")
+        #plt.tight_layout()
+        #plt.title('Confusion matrix', y=1.1)
+        #plt.ylabel('Actual label')
+        #plt.xlabel('Predicted label')
 
-        return confm
+        display(cmtx, reference_pd, '', p, r, f1, ac)
 
 
     def roc(self, actuals, predicted):
         from sklearn.metrics import roc_curve, auc
 
         # plot
-        
         false_positive_rate, true_positive_rate, thresholds = roc_curve(actuals, predicted)
         auc = auc(false_positive_rate, true_positive_rate)
         plt.plot(false_positive_rate,true_positive_rate,label="data 1, auc="+str(auc))
@@ -447,26 +469,10 @@ class T(pd.DataFrame):
         return print(classification_report(actuals, predicted, digits=3))
 
 
-    def score(self, actuals, predicted):
-        from sklearn.metrics import precision_recall_fscore_support as score
-        from sklearn.metrics import accuracy_score
-        precision,recall,fscore,support = score(actuals, predicted,average='macro')
-
-        print ('Precision : {}'.format(precision) )
-        print ('Recall    : {}'.format(recall) )
-        print ('F-score   : {}'.format(fscore) )
-        print ('Accuracy  : {}'.format(accuracy_score(actuals,predicted)) )
-        print ('Support   : {}'.format(support) )
-
-        return [precision,recall,fscore,support]
-
-
     def prediction_eval(self, actuals, predicted):
-        T().score(actuals, predicted)
 
         T().confusion(actuals, predicted)
-        plt.show()
-
+    
         T().roc(actuals, predicted)
         plt.show()
 
