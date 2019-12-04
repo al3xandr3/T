@@ -405,8 +405,8 @@ class T(pd.DataFrame):
 
         cmtx = pd.DataFrame(
             confm, 
-            index=['Actual: No', 'Actual: Yes'], 
-            columns=['Pred: No', 'Pred: Yes'] )
+            index   = ['Actual: 0', 'Actual: 1'], 
+            columns = ['Pred: 0', 'Pred:   1'] )
 
         #Total sum per column: 
         cmtx.loc['total',:]= cmtx.sum(axis=0)
@@ -414,16 +414,18 @@ class T(pd.DataFrame):
         #Total sum per row: 
         cmtx.loc[:,'total'] = cmtx.sum(axis=1)
 
-        reference = {'Pred: No': ['TN', 'FP'], 'Pred: Yes': ['FN', 'TP']}
+        reference = {'Pred: 0': ['TN', 'FP'], 'Pred: 1': ['FN', 'TP']}
         reference_pd = pd.DataFrame.from_dict(reference)
-        reference_pd.index=['Actual: No', 'Actual: Yes']
+        reference_pd.index=['Actual: 0', 'Actual: 1']
 
         prec = tp/(tp+fp)
         rec  = tp/(tp+fn)
-        p = 'Precision (=TP/(TP+FP))                              : {}'.format(prec)
-        r = 'Recall    (=TP/(TP+FN))                              : {}'.format(rec)
-        f1= 'F1-score  (=2*(Precision*Recall)/(Precision+Recall)) : {}'.format(2*(prec*rec)/(prec+rec))
-        ac= 'Accuracy  (=(TP+TN)/Total)                           : {}'.format((tp+tn)/(tp+tn+fp+fn))
+        p =  'Precision (Pre) =TP/(TP+FP)                      : {}'.format(prec)
+        r =  'Recall    (Rec) =TP/(TP+FN)                      : {}'.format(rec)
+        f1=  'F1-score        =2*(Pre*Rec)/(Pre+Rec)           : {}'.format(2*(prec*rec)/(prec+rec))
+        ac=  'Accuracy        =(TP+TN)/Total                   : {}'.format((tp+tn)/(tp+tn+fp+fn))
+        f05= 'F05-score       =1.25*(Pre*Rec)/((0.25*Pre)+Rec) : {}'.format(1.25*prec*rec/((0.25*prec)+rec))
+        f2 = 'F2-score        =5*(Pre*Rec)/((4*Pre)+Rec)       : {}'.format(5*prec*rec/((4*prec)+rec))
 
         # plot
         #class_names=[0,1] # name  of classes
@@ -443,7 +445,7 @@ class T(pd.DataFrame):
         #plt.ylabel('Actual label')
         #plt.xlabel('Predicted label')
 
-        display(cmtx, reference_pd, '', p, r, f1, ac)
+        display(cmtx, reference_pd, '', p, r, f1, ac, f05, f2)
 
 
     def roc(self, actuals, predicted):
