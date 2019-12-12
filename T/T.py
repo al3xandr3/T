@@ -414,9 +414,14 @@ class T(pd.DataFrame):
         #Total sum per row: 
         cmtx.loc[:,'total'] = cmtx.sum(axis=1)
 
-        reference = {'Pred: 0': ['TN', 'FP'], 'Pred: 1': ['FN', 'TP']}
-        reference_pd = pd.DataFrame.from_dict(reference)
-        reference_pd.index=['Actual: 0', 'Actual: 1']
+        cmtx.iloc[0,0] = "TN= " + str(cmtx.iloc[0,0])
+        cmtx.iloc[1,1] = "TP= " + str(cmtx.iloc[1,1])
+        cmtx.iloc[0,1] = "FN= " + str(cmtx.iloc[0,1])
+        cmtx.iloc[1,0] = "FP= " + str(cmtx.iloc[1,0])
+            
+        #reference = {'Pred: 0': ['TN', 'FP'], 'Pred: 1': ['FN', 'TP']}
+        #reference_pd = pd.DataFrame.from_dict(reference)
+        #reference_pd.index=['Actual: 0', 'Actual: 1']
 
         prec = tp/(tp+fp)
         rec  = tp/(tp+fn)
@@ -445,7 +450,7 @@ class T(pd.DataFrame):
         #plt.ylabel('Actual label')
         #plt.xlabel('Predicted label')
 
-        display(cmtx, reference_pd, '', p, r, f1, ac, f05, f2)
+        display(cmtx, '', p, r, f1, ac, f05, f2)
 
 
     def roc(self, actuals, predicted):
