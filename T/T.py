@@ -391,9 +391,6 @@ class T(pd.DataFrame):
     #differences = permuted_sample_average_difference(baby, 'Maternal Age', 'Maternal Smoker', 5000)
 
 
-
-
-
     ##################################
     # Model Scoring
 
@@ -471,12 +468,12 @@ class T(pd.DataFrame):
         return [false_positive_rate, true_positive_rate, thresholds]
 
 
-    def scores(self, actuals, predicted):
-        from sklearn.metrics import classification_report
-        return print(classification_report(actuals, predicted, digits=3))
+    #def scores(self, actuals, predicted):
+    #    from sklearn.metrics import classification_report
+    #    return print(classification_report(actuals, predicted, digits=3))
 
 
-    def prediction_eval(self, actuals, predicted):
+    def classification_score(self, actuals, predicted):
 
         T().confusion(actuals, predicted)
     
@@ -484,6 +481,24 @@ class T(pd.DataFrame):
         plt.show()
 
         return 1
+
+    def regression_score(self, actuals, predicted):
+        from sklearn import metrics
+        print('MAE:' , metrics.mean_absolute_error(actuals, predicted))
+        print('MSE:' , metrics.mean_squared_error(actuals, predicted))
+        print('RMSE:', np.sqrt(metrics.mean_squared_error(actuals, predicted)))
+        print('r2:'  , metrics.r2_score (actuals, predicted))
+
+
+    def cross_validation_score(self, model, actuals, predicted):
+        from sklearn.model_selection import cross_val_score   
+        _scores = cross_val_score(model, actuals, predicted, scoring="neg_mean_squared_error", cv=10)
+        scores = np.sqrt(-_scores)
+        print("Scores:", scores)
+        print("")
+        print("Mean:", scores.mean())
+        print("Standard deviation:", scores.std())
+
 
 
     def tree_explainer(self, model, features):
@@ -503,6 +518,57 @@ class T(pd.DataFrame):
         pd.DataFrame(shap_values).head()
 
         return shap.summary_plot(shap_values, data)
+
+
+    def grid_search(self, estimator, x_train, y_train, param_grid, scoring=None, n_jobs=-1, cv=10):
+
+        from sklearn.model_selection import GridSearchCV
+
+        #from sklearn.model_selection import ShuffleSplit
+        #Choose cross-validation generator - let's choose ShuffleSplit which randomly shuffles and selects Train and CV sets 
+        #for each iteration. There are other methods like the KFold split. 
+        #cv = ShuffleSplit(x_train.shape[0], test_size=0.2) 
+
+
+        # Apply the cross-validation iterator on the Training set using  GridSearchCV. This will run the classifier on the 
+        # different train/cv splits using parameters specified and return the model that has the best results 
+        # Note that we are tuning based on the F1 score 2PR/P+R where P is Precision and R is Recall. This may not always be 
+        # the best score to tune our model on. I will explore this area further in a seperate exercise. For now, we'll use F1. 
+        classifier = GridSearchCV(estimator=estimator, cv=cv, param_grid=param_grid, n_jobs=n_jobs, verbose=2, scoring=scoring, return_train_score=True) 
+        
+        # Also note that we're feeding multiple neighbors to the GridSearch to try out. 
+        # We'll now fit the training dataset to this classifier 
+        classifier.fit(x_train, y_train) 
+        
+        #Let's look at the best estimator that was found by GridSearchCV 
+        print("")
+        print ("Best Estimator") 
+        print("---------------------------" )
+        print (classifier.best_estimator_)
+        print("")
+
+        print("")
+        print("Best Estimator Parameters" )
+        print("---------------------------" )
+        print(classifier.best_params_)
+        print("")
+        #print("Train R-squared: %.2f" %classifier.best_estimator_.score(x_train,y_train) )
+
+        # Each of these parameters is critical to learning. Some of them will help address overfitting issues as well
+        return classifier
+
+        ## Call like so:        
+        #param_grid={'n_estimators':    [1, 3], 
+        #            'learning_rate':   [0.1, 0.05],
+        #            'max_depth':       [2,10], 
+        #            'min_samples_leaf':[3,17], 
+        #            'max_features':    [1.0,0.1]
+        #           }
+        #n_jobs=4
+
+        ## Let's fit GBRT to the digits training dataset by calling the function we just created.
+        #cv, best_est = GradientBooster(param_grid, n_jobs)
+
 
         
     def tree_viz(self, model, feature_names, class_names=[]):
