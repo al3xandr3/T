@@ -1,12 +1,12 @@
 
-import doctest
-import re
+
 import pytest
-import numpy as np
 from datetime import datetime
 from numpy.testing import assert_array_equal
+import pandas    as pd
+import operator  as op
 
-from T import *
+import t as t
 
 import warnings
 warnings.simplefilter(action="ignore", category=FutureWarning)
@@ -18,7 +18,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 @pytest.fixture(scope='function')
 def table1():
     """Setup Scrabble table"""
-    return T({'user':['k','j','k','t','k','j'] \
+    return pd.DataFrame({'user':['k','j','k','t','k','j'] \
                     , 'date': [datetime.strptime(d, '%Y-%m-%d') for d in ['2018-10-16', '2018-10-16', '2018-10-17', '2018-10-17', '2018-10-18', '2018-10-19']]
                     , 'period':['before', 'before', 'before', 'before', 'after','after'] \
                     , 'cohort':['control','control','control','control','control','control'] \
@@ -34,85 +34,54 @@ def table1():
 
 def test_select(table1):
     """Tests select and column by index"""
-    assert T(table1).select("kpi").column(0)[0] == 5
+    assert t.column(t.select(table1, "kpi"), 0)[0] == 5
 
 
 def test_where(table1):
     """Tests where and column by index"""
-    assert T(table1).where("kpi", 10).column(0)[0] == 'j'
+    assert t.column(t.where(table1, "kpi", 10), 0)[0] == 'j'
 
 
 def test_where2(table1):
     """Tests where and column by index"""
-    assert T(table1).where("kpi", 11, op.ne).column(0)[0] == 'k'
+    assert t.column(t.where(table1, "kpi", 11, op.ne), 0)[0] == 'k'
 
 
 def test_where3(table1):
     """Tests where and column by index"""
-    assert T(table1).where("kpi", 9, op.gt).column(0)[0] == 'j'
+    assert t.column(t.where(table1, "kpi", 9, op.gt), 0)[0] == 'j'
 
 
 def test_relabel(table1):
     """Tests relabel column by name, multiple select"""
-    t2 = T(table1).relabel("kpi", "bacalhau")
-    assert T(t2).select("bacalhau", "isLabel").column("bacalhau")[0] == 5
-    assert T(t2).select("bacalhau", "isLabel").column("isLabel")[0]  == 0
+    t2 = t.relabel(table1,"kpi", "bacalhau")
+    assert t.column(t.select(t2, "bacalhau", "isLabel"), "bacalhau")[0] == 5
+    assert t.column(t.select(t2, "bacalhau", "isLabel"), "isLabel")[0]  == 0
+
 
 def test_row(table1):
     """Tests row and column by name"""
-    assert T(table1).row(0)[0] == 'k'
+    assert t.row(table1, 0)[0] == 'k'
 
 
 def test_group(table1):
     """Tests row and column by name"""
-    assert T(table1).group("user").where("user", 1).reset_index()['index'].values[0] == 't'
+    assert t.where(t.group(table1, "user"), "user", 1).reset_index()['index'].values[0] == 't'
 
 
 def test_sort(table1):
     """Tests row and column by name"""
-    assert T(table1).sort("kpi").select("kpi2").column(0)[0] == 51234123
-    assert T(table1).sort("kpi", ascending=False).select("kpi2").column(0)[0] == 101234123
+    assert t.column(t.select(t.sort(table1, "kpi"), "kpi2"), 0)[0] == 51234123
+    assert t.column( t.select( t.sort(table1, "kpi", ascending=False), "kpi2"), 0)[0] == 101234123
 
 
 def test_numeric_eda(table1):
-    assert round(T(table1).variance("kpi")) == 3
-    assert round(T(table1).std("kpi"))      == 2
-    assert round(T(table1).avg("kpi"))      == 8 
-    assert round(T(table1).median("kpi"))   == 8
+    assert round(t.variance(table1, "kpi")) == 3
+    assert round(t.std(table1, "kpi"))      == 2
+    assert round(t.avg(table1, "kpi"))      == 8 
+    assert round(t.median(table1, "kpi"))   == 8
 
 def test_ci(table1):
-    assert T(table1).ci_mean("kpi")['mean'] == 7.5
-    assert T(table1).ci_median("kpi")['median'] == 7.5
+    assert t.ci_mean(table1, "kpi")['mean'] == 7.5
+    assert t.ci_median(table1, "kpi")['median'] == 7.5
 
-
-"""
-    print(
-
-        # Query
-        ,"\n\n", df.format()
-        ,"\n\n", df.format(lambda x: '{0:.1%}'.format(x))
-
-        # EDA Viz
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B']).histogram('A'),         plt.show()
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B']).histogram('A', 'B'),    plt.show()
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B']).histogram('A', 'B', side_by_side=True), plt.show()
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B']).scatter('A', 'B'),  plt.show()
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B']).line('A', 'B'),     plt.show()
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B']).bar('A', 'B'),      plt.show()
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B']).barh('A', 'B'),     plt.show()
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B'] ).ecdf('A', label='actions per day')
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B'] ).ecdf('A', 'B', label='actions per day')
-        ,"\n\n", T(np.random.normal(size=(37,2)), columns=['A', 'B'] ).showna()
-
-
-        # EDA Number
-        ,"\n\n", T(pd.DataFrame( np.arange(100), columns=['kpi']) ).decile('kpi')
-
-        # Stat Inference, CI
-        ,"\n\n", print(T(np.hstack((np.ones(200), np.zeros(800) )), columns=['isLabel'] ).ci_proportion('isLabel')),  plt.show()
-        
-        # Hypothesis
-        ,"\n\n", df.hypothesis_mean_diff("kpi", "isLabel", repetitions=3)
-
-        )
-"""

@@ -1,9 +1,10 @@
 
-# T is for Table
+# t is for Table
 
-T makes Pandas more intuitive while extending it further with DataScience tools. In particular, Bootstrap ReSampling methods (a.k.a [Hacker Statistics](https://speakerdeck.com/jakevdp/statistics-for-hackers))
+t has the goal of building up on Pandas with the intent of making it more intuitive and extending it with further DataScience tools. 
 
-Under the covers it uses Pandas dataframe for speed and for its rich library.
+For example it integrates Bootstrap ReSampling statistical methods (a.k.a [Hacker Statistics](https://speakerdeck.com/jakevdp/statistics-for-hackers))
+
 
 ## Basic Usage
 
@@ -24,10 +25,9 @@ Under the covers it uses Pandas dataframe for speed and for its rich library.
 4|k|post|43
 5|j|post|34
 
-Wrap a pandas dataframe with a T( ) to have access to this library methods 
 
 ```python
->>> T(df).where("period", "post").select("user", "kpi")
+>>> t.select( t.where(df, "period", "post"), "user", "kpi")
 ```
 **.** |**user**|**kpi**
 :-----:|:-----:|:-----:
@@ -35,12 +35,10 @@ Wrap a pandas dataframe with a T( ) to have access to this library methods
 1|j|34
 
 
-T( ) takes the same arguments as a data frame and then includes new methods, like this example that uses Bootstrap ReSampling approach to calculate a 95% confidence interval of the mean:
 
 ```python
->>> T(np.random.normal(size=(37,2)), columns=['A', 'B']).ci_mean('A')
+>>> t.ci_mean(pd.DataFrame (np.random.normal(size=(37,2)), columns=['A', 'B']), 'A')
 ```
-
     {'mean': -0.33, '95% conf int of mean': array([-0.64, -0.03])}
 
 including plotting it:
@@ -50,5 +48,10 @@ including plotting it:
 
 ## Notebook of example usage
 
-https://github.com/al3xandr3/Data-Science-ipynb/blob/master/T.ipynb
+https://github.com/al3xandr3/Data-Science-ipynb/blob/master/t%20is%20for%20table%20version2.ipynb
 
+
+## Run Tests
+
+    > cd "C:\path\my\projects\t"
+    > pytest

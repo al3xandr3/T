@@ -1,9 +1,13 @@
+    
+__version__ = '0.0.5'
 
-from .version import __version__
+# Imported methods
+from t.table import *
 
-from .T import *
-from ._stats import *
+from t.stats import *
 
-#from .maps import *
-#from .predicates import *
-#from .util import *
+from t.eda import *
+
+from t.financial import *
+
+from t.ml import *

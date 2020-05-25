@@ -4,7 +4,9 @@ import re
 import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
+import pandas    as pd
 
-from T import *
+import t as t
+
 
 ## TODO

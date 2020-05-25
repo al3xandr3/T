@@ -14,7 +14,10 @@ more efficient calculation.
 
 import numpy as np
 import numba
-
+import matplotlib.pyplot as plt
+import pandas    as pd
+import t.table as t
+import t.eda as eda
 
 #@numba.jit(nopython=True)
 def bellow_percentile (df, percentile):
@@ -146,7 +149,7 @@ def ecdf(data, formal=False, buff=0.1, min_x=None, max_x=None):
     .. nan entries in `data` are ignored.
     """
     if formal and buff is None and (min_x is None or max_x is None):
-        raise RunetimeError(
+        raise RuntimeError(
                     'If `buff` is None, `min_x` and `max_x` must be specified.')
 
     data = _convert_data(data)
@@ -906,7 +909,7 @@ def b_value(mags, mt, perc=[2.5, 97.5], n_reps=None):
     if n_reps is None:
         return b
     else:
-        m_bs_reps = dcst.draw_bs_reps(m, np.mean, size=n_reps)
+        m_bs_reps = draw_bs_reps(m, np.mean, size=n_reps)
 
         # Compute b-value from replicates
         b_bs_reps = (m_bs_reps - mt) * np.log(10)
@@ -1538,6 +1541,7 @@ def _seed_numba(seed):
     np.random.seed(seed)
 
 
+
 # ----------------------- 
 # Added Custom functions
 # ----------------------- 
@@ -1664,3 +1668,111 @@ def standard_units(numbers_array):
 
 
 
+##################################
+# Hypothesis Testing 
+
+# https://www.inferentialthinking.com/chapters/12/1/AB_Testing
+def hypothesis_mean_diff(df, label, group_label, repetitions=10000):
+    
+    tbl = t.select(df, group_label, label)
+    
+    differences = []
+    for i in np.arange(repetitions):
+        #shuffled = T(tbl.sample(n=len(T(self).column(0)), replace=False)).column(1)
+        shuffled = t.column(tbl.sample(n=len(df.index), replace=False), 1)
+        tbl['Shuffled'] = shuffled
+
+        shuffled_means       = tbl.groupby(group_label).mean() #.reset_index()
+        simulated_difference = t.column(shuffled_means, 1)[1] - t.column(shuffled_means, 1)[0]
+        differences          = np.append(differences, simulated_difference)
+    
+    ## Chart
+    _ = eda.histogram(pd.DataFrame(differences, columns=['Difference Between Group Averages']) , 'Difference Between Group Averages', xlabel='Difference Between Group Averages')
+    odf = tbl.groupby(group_label).mean().reset_index()
+    odiff = t.column(odf, 1)[1] - t.column(odf, 1)[0]
+    
+    # Compute p-value: p
+    p = np.mean(differences >= odiff)
+    p = 2*min(p, 1-p) # both sides
+
+    return {
+        'Observed Difference': odiff
+        ,'p-value': p
+        ,'decision': "No significant difference" if p>0.05 else "Significant Difference"
+        ,'Null Hypothesis Bootstrap Differences': differences   
+}
+
+#differences = permuted_sample_average_difference(baby, 'Maternal Age', 'Maternal Smoker', 5000)
+
+
+
+
+########################################
+# Confidence Interval
+def ci_mean(df, column1, withChart=True):
+    res = bs_mean_95ci( t.column(df, column1 ) )
+
+    # plot
+    if (withChart):
+        resampled_proportions = pd.DataFrame(res["Bootstrap Samples"], columns=['Bootstrap Samples'])
+        eda.histogram(resampled_proportions, 'Bootstrap Samples')
+        _ = plt.plot([res["95% conf int of mean"][0], res["95% conf int of mean"][1]], [0, 0], color='yellow', lw=8)
+        _ = plt.plot([res["mean"]], [0.05], marker='o', markersize=3, color="red")
+
+    return ({  
+         "mean": res["mean"]
+        ,"95% conf int of mean": res["95% conf int of mean"]
+})
+
+
+def ci_median(df, column1, withChart=True):
+    res = bs_median_95ci( t.column(df, column1 ) )
+
+    # plot
+    if (withChart):
+        resampled_proportions = pd.DataFrame(res["Bootstrap Samples"], columns=['Bootstrap Samples'])
+        eda.histogram(resampled_proportions, 'Bootstrap Samples')
+        _ = plt.plot([res["95% conf int of median"][0], res["95% conf int of median"][1]], [0, 0], color='yellow', lw=8)
+        _ = plt.plot([res["median"]], [0.05], marker='o', markersize=3, color="red")
+
+    return ({  
+         "median": res["median"]
+        ,"95% conf int of median": res["95% conf int of median"]
+    })
+    
+
+def ci_proportion(df, column1, repetitions=5000, withChart=True):
+
+    just_one_column = t.select(df, column1 )
+    proportions = []
+    for i in np.arange(repetitions):
+        bootstrap_sample = just_one_column.sample(n=len(  t.column(df, column1 )  ), replace=True) # sample with replacement
+        resample_array = t.column(bootstrap_sample, 0 )
+        resampled_proportion = np.count_nonzero(resample_array) / len(resample_array)
+        proportions = np.append(proportions, resampled_proportion)
+        
+    # Get the endpoints of the 95% confidence interval
+    left  = np.percentile(proportions, 2.5)
+    right = np.percentile(proportions, 97.5)
+
+    ## plot
+    if (withChart):
+        resampled_proportions = pd.DataFrame(proportions, columns=['Bootstrap Sample Proportion'])
+        eda.histogram(resampled_proportions, 'Bootstrap Sample Proportion')
+        _ = plt.plot([left, right], [0, 0], color='yellow', lw=8)
+        _ = plt.plot([np.count_nonzero(   t.column(df, column1) ) / len( t.column(df, column1) )], [0.05], marker='o', markersize=3, color="red")
+
+    return {
+        "Proportion of 1s": np.count_nonzero( t.column(df, column1) ) / len( t.column(df, column1) )
+        ,"95% Conf. Int. of Proportion":  [left, right]
+    }
+
+
+
+if __name__ == "__main__":
+    print("Run as a lib:")
+    l = []
+    for key, value in list(locals().items()):
+        if callable(value) and value.__module__ == __name__:
+            l.append(key)
+    print(l)
