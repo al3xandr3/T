@@ -8,6 +8,12 @@ Created on Sat May 16 15:53:36 2020
 import pandas as pd
 import t.table as t
 import operator as op
+from datetime import datetime
+
+from datetime import datetime
+
+
+#datetime_object = datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')
 
 ##################################
 # Financial 
@@ -17,7 +23,7 @@ import operator as op
 def get_quotes(symbol, date_from):
     import pandas as pd
     import pandas_datareader.data as web
-    raw_data = web.DataReader(symbol, 'yahoo', pd.to_datetime(date_from), pd.datetime.now())
+    raw_data = web.DataReader(symbol, 'yahoo', datetime.strptime(date_from, "%Y-%m-%d"), datetime.today())
     data = raw_data.stack(dropna=False).reset_index().rename(columns = {'Symbols':'symbol', 'Date':'date'}).sort_values(by = ['symbol', 'date'])
     return data
 # > prices = get_quotes(['SPY', '^GSPC', '^VIX'], date_from = '2000-01-01')
@@ -27,7 +33,7 @@ def get_quotes(symbol, date_from):
 def get_quotes_close(symbol, date_from):
     import pandas as pd
     import pandas_datareader.data as web
-    raw_data = web.DataReader(symbol, 'yahoo', pd.to_datetime(date_from), pd.datetime.now())
+    raw_data = web.DataReader(symbol, 'yahoo', datetime.strptime(date_from, "%Y-%m-%d"), datetime.today())
     data = raw_data.stack(dropna=False)['Adj Close'].to_frame().reset_index().rename(columns = {'Symbols':'symbol', 'Date':'date', 'Adj Close':'value'}).sort_values(by = ['symbol', 'date'])
     return pd.pivot_table(data, columns = 'symbol', index = 'date', values ='value')    
 # > prices = get_quotes_close(['SPY', '^GSPC', '^VIX'], date_from = '2000-01-01')
@@ -53,9 +59,9 @@ def backtest_strategy(symbol_price, trade_orders, capital):
     output : (results: df, lift: float)
         columns: index as date, total gains
     """
-    
     symbol = symbol_price.columns[1]
     df = t.sort(pd.merge(symbol_price, trade_orders, on=["date"], how="outer", indicator=True), "date", ascending=True)
+    df = t.drop(df, "_merge")
     
     df["date"] = pd.to_datetime(df["date"])
     

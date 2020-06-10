@@ -18,7 +18,7 @@ def relabel(df, OriginalName, NewName):
 
 # https://docs.python.org/3.4/library/operator.html
 def where(df, column, value, operation=op.eq):
-    return pd.DataFrame( df.loc[operation(df.loc[:,column], value) ,:]  )
+    return pd.DataFrame( df.loc[operation(df.loc[:,column], value) ,:] )
 
 
 def select(df, *column_or_columns):
@@ -61,6 +61,29 @@ def column(df, index_or_label):
             )
         else:
             return df.iloc[:,index_or_label].values
+
+def drop(df, index_or_label):
+    
+    if (isinstance(index_or_label, str)):
+        if (index_or_label not in df.columns):
+            raise ValueError(
+                'The column "{}" is not in the table. The table contains '
+                'these columns: {}'
+                .format(index_or_label, ', '.join(df.labels))
+            )
+        else:
+            return df.drop(index_or_label, axis=1)
+
+    if (isinstance(index_or_label, int)):
+        if (not 0 <= index_or_label < len(df.columns)):
+            raise ValueError(
+                'The index {} is not in the table. Only indices between '
+                '0 and {} are valid'
+                .format(index_or_label, len(df.labels) - 1)
+            )
+        else:
+            return df.drop(index_or_label, axis=0)
+    return 
 
 
 def row(df, index):
@@ -109,8 +132,12 @@ def format(df, num_format=lambda x: '{:,}'.format(x)):
     return df.style.set_table_styles(style).format(formatters)
 
 
-def group(df, column):
-    return pd.DataFrame(df[column].value_counts())
+def group(df, column, rename=""):
+    df_gp = pd.DataFrame(df[column].value_counts())
+    if rename != "":
+        return relabel(df_gp,column,rename)
+    else:
+        return relabel(df_gp,column,column + "_count")
 
 def count(df, column):
     return len( np.unique( df[column] ))

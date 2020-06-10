@@ -1,12 +1,16 @@
 
-# t is for Table
+# T is for Table
 
-t has the goal of building up on Pandas with the intent of making it more intuitive and extending it with further DataScience tools. 
+![tookie](https://drive.google.com/uc?id=1Izd0GONLY-G-gHa_1SPr2ujVmrFg9UYX)
+
+T extends Pandas Dataframes with a collection of table manipulation functions as well as statistical, machine learning, finantial and EDA methods. 
 
 For example it integrates Bootstrap ReSampling statistical methods (a.k.a [Hacker Statistics](https://speakerdeck.com/jakevdp/statistics-for-hackers))
 
 
 ## Basic Usage
+
+Create a plain data frame 
 
 ```python
 >>> df = pd.DataFrame( {
@@ -25,6 +29,7 @@ For example it integrates Bootstrap ReSampling statistical methods (a.k.a [Hacke
 4|k|post|43
 5|j|post|34
 
+Filter the rows that have the value "post" and from that select the columns "user" and "kpi"
 
 ```python
 >>> t.select( t.where(df, "period", "post"), "user", "kpi")
@@ -35,18 +40,17 @@ For example it integrates Bootstrap ReSampling statistical methods (a.k.a [Hacke
 1|j|34
 
 
+Calculate the mean's confidence interval. It includes plotting it.
 
 ```python
 >>> t.ci_mean(pd.DataFrame (np.random.normal(size=(37,2)), columns=['A', 'B']), 'A')
 ```
     {'mean': -0.33, '95% conf int of mean': array([-0.64, -0.03])}
 
-including plotting it:
-
 ![ci_mean](docs/ci_mean.png)
 
 
-## Notebook of example usage
+## More Examples
 
 https://github.com/al3xandr3/Data-Science-ipynb/blob/master/t%20is%20for%20table%20version2.ipynb
 
