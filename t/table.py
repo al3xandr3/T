@@ -111,7 +111,7 @@ def exclude(df, toexclude_df, column):
     return ( pd.DataFrame(the_join).where('_merge', "left_only") )
     
  
-def format(df, num_format=lambda x: '{:,}'.format(x)):
+def format(df, num_format=lambda x: '{:,.1f}'.format(x)):
     """Returns a better number formated table. Is Slow
 
     Args:
@@ -120,16 +120,26 @@ def format(df, num_format=lambda x: '{:,}'.format(x)):
     Returns:
         pandas dataframe
     """
-    def build_formatters(df, format):
+    #TODO: this looks inefficient 
+    def build_formatters_ints(df):
         return {
-            column:format 
+            column:lambda x: '{:,}'.format(x) 
             for column, dtype in df.dtypes.items()
-            if dtype in [ np.dtype('int64'), np.dtype('float64') ] 
+            if dtype in [ np.dtype('int64') ] 
         }
-    formatters = build_formatters(df, num_format)
+
+    def build_formatters_floats(df):
+        return {
+            column:lambda x: '{:.1f}'.format(x) 
+            for column, dtype in df.dtypes.items()
+            if dtype in [  np.dtype('float64') ] 
+        }
+    
+    format_int   = build_formatters_ints(df)
+    format_float = build_formatters_floats(df)
     style = '<style>.dataframe td { text-align: right; }</style>'
 
-    return df.style.set_table_styles(style).format(formatters)
+    return df.style.set_table_styles(style).format(format_int).format(format_float)
 
 
 def group(df, column, rename=""):

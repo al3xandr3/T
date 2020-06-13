@@ -20,20 +20,20 @@ from datetime import datetime
 # https://www.youtube.com/watch?v=XLL9KGeQltQ&feature=youtu.be
 # https://github.com/marekkolman/yt_backtest_trading_demo/blob/master/backtest.py
 
-def get_quotes(symbol, date_from):
+def get_quotes(symbol, date_from, date_to=datetime.today()):
     import pandas as pd
     import pandas_datareader.data as web
-    raw_data = web.DataReader(symbol, 'yahoo', datetime.strptime(date_from, "%Y-%m-%d"), datetime.today())
+    raw_data = web.DataReader(symbol, 'yahoo', datetime.strptime(date_from, "%Y-%m-%d"), date_to)
     data = raw_data.stack(dropna=False).reset_index().rename(columns = {'Symbols':'symbol', 'Date':'date'}).sort_values(by = ['symbol', 'date'])
     return data
 # > prices = get_quotes(['SPY', '^GSPC', '^VIX'], date_from = '2000-01-01')
 
 
 
-def get_quotes_close(symbol, date_from):
+def get_quotes_close(symbol, date_from, date_to=datetime.today() ):
     import pandas as pd
     import pandas_datareader.data as web
-    raw_data = web.DataReader(symbol, 'yahoo', datetime.strptime(date_from, "%Y-%m-%d"), datetime.today())
+    raw_data = web.DataReader(symbol, 'yahoo', datetime.strptime(date_from, "%Y-%m-%d"), date_to)
     data = raw_data.stack(dropna=False)['Adj Close'].to_frame().reset_index().rename(columns = {'Symbols':'symbol', 'Date':'date', 'Adj Close':'value'}).sort_values(by = ['symbol', 'date'])
     return pd.pivot_table(data, columns = 'symbol', index = 'date', values ='value')    
 # > prices = get_quotes_close(['SPY', '^GSPC', '^VIX'], date_from = '2000-01-01')

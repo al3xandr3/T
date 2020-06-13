@@ -34,6 +34,18 @@ Filter the rows that have the value "post" and from that select the columns "use
 ```python
 >>> t.select( t.where(df, "period", "post"), "user", "kpi")
 ```
+
+
+Note that alternativelly we can also use the Pandas pipe operator to chain functions, with the same result
+I've renamed "pipe" to "p" when the T library is included:
+
+```python
+>>> (df
+      .p(t.where, "period", "post")
+      .p(t.select, "user", "kpi"))
+```
+
+
 **.** |**user**|**kpi**
 :-----:|:-----:|:-----:
 0|k|43
