@@ -3,7 +3,7 @@
 
 ![tookie](https://drive.google.com/uc?id=1Izd0GONLY-G-gHa_1SPr2ujVmrFg9UYX)
 
-T extends Pandas Dataframes with a collection of table manipulation functions as well as statistical, machine learning, finantial and EDA methods. 
+T extends Pandas Dataframes with a collection of table manipulation methods as well as statistical, machine learning, financial and EDA methods.
 
 For example it integrates Bootstrap ReSampling statistical methods (a.k.a [Hacker Statistics](https://speakerdeck.com/jakevdp/statistics-for-hackers))
 
