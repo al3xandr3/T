@@ -9,8 +9,9 @@ import pandas as pd
 import t.table as t
 import operator as op
 from datetime import datetime
-
-from datetime import datetime
+from datetime import date
+import numpy as np
+from scipy import optimize
 
 
 #datetime_object = datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')
@@ -37,6 +38,60 @@ def get_quotes_close(symbol, date_from, date_to=datetime.today() ):
     data = raw_data.stack(dropna=False)['Adj Close'].to_frame().reset_index().rename(columns = {'Symbols':'symbol', 'Date':'date', 'Adj Close':'value'}).sort_values(by = ['symbol', 'date'])
     return pd.pivot_table(data, columns = 'symbol', index = 'date', values ='value')    
 # > prices = get_quotes_close(['SPY', '^GSPC', '^VIX'], date_from = '2000-01-01')
+
+
+def xnpv(rate,cashflows):
+    """
+    Calculate the net present value of a series of cashflows at irregular intervals.
+    Arguments
+    ---------
+    * rate: the discount rate to be applied to the cash flows
+    * cashflows: a list object in which each element is a tuple of the form (date, amount), where date is a python datetime.date object and amount is an integer or floating point number. Cash outflows (investments) are represented with negative amounts, and cash inflows (returns) are positive amounts.
+    
+    Returns
+    -------
+    * returns a single value which is the NPV of the given cash flows.
+    Notes
+    ---------------
+    * The Net Present Value is the sum of each of cash flows discounted back to the date of the first cash flow. The discounted value of a given cash flow is A/(1+r)**(t-t0), where A is the amount, r is the discout rate, and (t-t0) is the time in years from the date of the first cash flow in the series (t0) to the date of the cash flow being added to the sum (t).  
+    * This function is equivalent to the Microsoft Excel function of the same name. 
+    """
+
+    chron_order = sorted(cashflows, key = lambda x: x[0])
+    t0 = chron_order[0][0] #t0 is the date of the first cash flow
+
+    return sum([cf/(1+rate)**((t-t0).days/365.0) for (t,cf) in chron_order])
+
+def xirr(cashflows,guess=0.1):
+    """
+    Calculate the Internal Rate of Return of a series of cashflows at irregular intervals.
+    Arguments
+    ---------
+    * cashflows: a list object in which each element is a tuple of the form (date, amount), where date is a python datetime.date object and amount is an integer or floating point number. Cash outflows (investments) are represented with negative amounts, and cash inflows (returns) are positive amounts.
+    * guess (optional, default = 0.1): a guess at the solution to be used as a starting point for the numerical solution. 
+    Returns
+    --------
+    * Returns the IRR as a single value
+    
+    Notes
+    ----------------
+    * The Internal Rate of Return (IRR) is the discount rate at which the Net Present Value (NPV) of a series of cash flows is equal to zero. The NPV of the series of cash flows is determined using the xnpv function in this module. The discount rate at which NPV equals zero is found using the secant method of numerical solution. 
+    * This function is equivalent to the Microsoft Excel function of the same name.
+    * For users that do not have the scipy module installed, there is an alternate version (commented out) that uses the secant_method function defined in the module rather than the scipy.optimize module's numerical solver. Both use the same method of calculation so there should be no difference in performance, but the secant_method function does not fail gracefully in cases where there is no solution, so the scipy.optimize.newton version is preferred.
+    
+     _irr = xirr( [ (date(2010, 12, 29), -10000),
+                   (date(2012, 1, 25), 20),
+                   (date(2012, 3, 8), 10100)] )
+    """
+    
+    val = -666
+    
+    try:
+        val = optimize.newton(lambda r: xnpv(r,cashflows),guess)
+    except:
+        print("Failed to converge after, returning: -666")
+    
+    return val
 
 
 
@@ -104,12 +159,17 @@ def backtest_strategy(symbol_price, trade_orders, capital):
         if invested_end_day < 0:
             df.loc[t.where(df, "date", date, op.eq).index[0], "nb"] = df.loc[t.where(df, "date", date, op.eq).index[0], "nb"] + " invested_end_day is negative"
         
+    
     # lift
     net_worth_start = t.column(df, "net_worth")[0]
     net_worth_end = t.column(df, "net_worth")[-1]
     lift = (net_worth_end - net_worth_start) / net_worth_start
 
-    return ({'transactions': df, 'lift': lift})
+    df["flux"] = - df["order_size"]
+    df.loc[df.index[-1], "flux"] = t.column(df, "flux")[-1] + net_worth_end
+    _irr = xirr(list(zip(df.date, df.flux)))
+    
+    return ({'transactions': df, 'ROI': lift, 'IRR': _irr, 'return': net_worth_end})
         
 
 
