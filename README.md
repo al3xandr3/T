@@ -62,6 +62,19 @@ Calculate the mean's confidence interval. It includes plotting it.
 ![ci_mean](docs/ci_mean.png)
 
 
+## Installing
+
+### directly from github
+
+    > pip install git+https://github.com/al3xandr3/T.git
+    
+### download and install
+
+    > git clone https://github.com/al3xandr3/T.git
+    > python setup.py install
+
+
+
 ## More Examples
 
 https://github.com/al3xandr3/Data-Science-ipynb/blob/master/t%20is%20for%20table%20version2.ipynb
@@ -76,15 +89,5 @@ https://github.com/al3xandr3/Data-Science-ipynb/blob/master/t%20is%20for%20table
 ## Build library
 
     > python setup.py sdist bdist_wheel
-    
-    
-## Installing Library
 
-### directly from github
-
-    > pip install git+https://github.com/al3xandr3/T.git
     
-### download and install
-
-    > git clone https://github.com/al3xandr3/T.git
-    > python setup.py install

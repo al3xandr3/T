@@ -3,5 +3,8 @@ __pycache__/
 *.pyc
 .spyproject/
 _arkv/
-.vscode/
 *~
+dist/
+build/
+.vscode/settings.json
+T_is_for_Table.egg-info/
