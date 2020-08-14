@@ -20,7 +20,8 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-          'pandas', 'numpy', 'matplotlib', 'numba', 'seaborn', 'operator', 'scipy', 'datetime'
-          
+          'pandas', 'numpy', 'matplotlib', 
+          'numba', 'seaborn', 'scipy', 
+          'datetime'
       ],
 )
