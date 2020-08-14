@@ -34,18 +34,28 @@ def confusion(actuals, predicted):
     cmtx.iloc[1,1] = "TP= " + str(cmtx.iloc[1,1])
     cmtx.iloc[0,1] = "FN= " + str(cmtx.iloc[0,1])
     cmtx.iloc[1,0] = "FP= " + str(cmtx.iloc[1,0])
-        
+ 
+    df_scores = pd.DataFrame(columns = ["metric", "value", "formula"])
+
 
     prec = tp/(tp+fp)
     rec  = tp/(tp+fn)
-    p =  'Precision (Pre) =TP/(TP+FP)                      : {}'.format(prec)
-    r =  'Recall    (Rec) =TP/(TP+FN)                      : {}'.format(rec)
-    f1=  'F1-score        =2*(Pre*Rec)/(Pre+Rec)           : {}'.format(2*(prec*rec)/(prec+rec))
-    ac=  'Accuracy        =(TP+TN)/Total                   : {}'.format((tp+tn)/(tp+tn+fp+fn))
-    f05= 'F05-score       =1.25*(Pre*Rec)/((0.25*Pre)+Rec) : {}'.format(1.25*prec*rec/((0.25*prec)+rec))
-    f2 = 'F2-score        =5*(Pre*Rec)/((4*Pre)+Rec)       : {}'.format(5*prec*rec/((4*prec)+rec))
+    df_scores = df_scores.append({'metric':'Precision (Prec)', 'value':prec, 'formula':"TP/(TP+FP)"}, ignore_index=True)
+    df_scores = df_scores.append({'metric':'Recall (Rec)',    'value':rec, 'formula':"TP/(TP+FN)"}, ignore_index=True)
+    df_scores = df_scores.append({'metric':'F1-score',  'value':2*(prec*rec)/(prec+rec), 'formula':"2*(Pre*Rec)/(Pre+Rec)"}, ignore_index=True)
+    df_scores = df_scores.append({'metric':'Accuracy ', 'value':(tp+tn)/(tp+tn+fp+fn), 'formula':"(TP+TN)/Total"}, ignore_index=True)
+    df_scores = df_scores.append({'metric':'F05-score', 'value':(1.25*prec*rec/((0.25*prec)+rec)), 'formula':"1.25*(Pre*Rec)/((0.25*Pre)+Rec)"}, ignore_index=True)
+    df_scores = df_scores.append({'metric':'F2-score',  'value':(5*prec*rec/((4*prec)+rec)), 'formula':"5*(Pre*Rec)/((4*Pre)+Rec)"}, ignore_index=True)
+ 
 
-    return(cmtx, '', p, r, f1, ac, f05, f2)
+    #p =  'Precision (Pre) =TP/(TP+FP)                      : {}'.format(prec)
+    #r =  'Recall    (Rec) =TP/(TP+FN)                      : {}'.format(rec)
+    #f1=  'F1-score        =2*(Pre*Rec)/(Pre+Rec)           : {}'.format(2*(prec*rec)/(prec+rec))
+    #ac=  'Accuracy        =(TP+TN)/Total                   : {}'.format((tp+tn)/(tp+tn+fp+fn))
+    #f05= 'F05-score       =1.25*(Pre*Rec)/((0.25*Pre)+Rec) : {}'.format(1.25*prec*rec/((0.25*prec)+rec))
+    #f2 = 'F2-score        =5*(Pre*Rec)/((4*Pre)+Rec)       : {}'.format(5*prec*rec/((4*prec)+rec))
+
+    return(cmtx, df_scores)
 
 
 def roc(actuals, predicted):
@@ -134,13 +144,13 @@ def grid_search(estimator, x_train, y_train, param_grid, scoring=None, n_jobs=-1
     print("")
     print ("Best Estimator") 
     print("---------------------------" )
-    print (classifier.best_estimator_)
+    print (str(classifier.best_estimator_))
     print("")
 
     print("")
     print("Best Estimator Parameters" )
     print("---------------------------" )
-    print(classifier.best_params_)
+    print(str(classifier.best_params_))
     print("")
 
     # Each of these parameters is critical to learning. Some of them will help address overfitting issues as well

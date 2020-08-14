@@ -62,6 +62,7 @@ def column(df, index_or_label):
         else:
             return df.iloc[:,index_or_label].values
 
+
 def drop(df, index_or_label):
     
     if (isinstance(index_or_label, str)):
@@ -149,11 +150,14 @@ def group(df, column, rename=""):
     else:
         return relabel(df_gp,column,column + "_count")
 
+
 def count(df, column):
     return len( np.unique( df[column] ))
 
+
 def showna(df):
     return sns.heatmap(df.isnull(),yticklabels=False,cbar=False,cmap='viridis')
+
 
 def sort(df, col, ascending=True):
     return pd.DataFrame(df.sort_values(col, ascending=ascending))
@@ -161,7 +165,6 @@ def sort(df, col, ascending=True):
 ##
 def variance(df, column1):
     return np.var( pd.DataFrame(df)[column1] )
-
 
 def median(df, column1):
     return np.median( pd.DataFrame(df)[column1] )

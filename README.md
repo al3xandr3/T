@@ -71,3 +71,20 @@ https://github.com/al3xandr3/Data-Science-ipynb/blob/master/t%20is%20for%20table
 
     > cd "C:\path\my\projects\t"
     > pytest
+    
+    
+## Build library
+
+    > python setup.py sdist bdist_wheel
+    
+    
+## Installing Library
+
+### directly from github
+
+    > pip install git+https://github.com/al3xandr3/T.git
+    
+### download and install
+
+    > git clone https://github.com/al3xandr3/T.git
+    > python setup.py install
