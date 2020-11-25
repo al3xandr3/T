@@ -9,8 +9,8 @@ import pandas as pd
 import t.table as t
 import operator as op
 from datetime import datetime
-from datetime import date
-import numpy as np
+#from datetime import date
+#import numpy as np
 from scipy import optimize
 
 

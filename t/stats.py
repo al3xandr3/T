@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import pandas    as pd
 import t.table as t
 import t.eda as eda
+from scipy import stats
 
 #@numba.jit(nopython=True)
 def bellow_percentile (df, percentile):
@@ -1661,7 +1662,6 @@ def bs_median_95ci(dta):
     })
 
 
-
 def standard_units(numbers_array):
     "Convert any array of numbers to standard units."
     return (numbers_array - np.mean(numbers_array))/np.std(numbers_array)  
@@ -1670,6 +1670,20 @@ def standard_units(numbers_array):
 
 ##################################
 # Hypothesis Testing 
+
+
+# https://www.inferentialthinking.com/chapters/12/1/AB_Testing
+def hypothesis_diff(dta1, dta2):
+    ks_statistic, p_value = stats.ks_2samp(dta1, dta2)
+    
+    return {
+         'Mean Difference (b-a)':   np.mean(dta2) - np.mean(dta1)
+        ,'Median Difference (b-a)': np.median(dta2) - np.median(dta1)
+        ,'Kolmogorov–Smirnov Statistic': ks_statistic
+        ,'p-value': p_value
+        ,'decision': "No significant difference" if p_value>0.05 else "Significant Difference"
+  }
+
 
 # https://www.inferentialthinking.com/chapters/12/1/AB_Testing
 def hypothesis_mean_diff(df, label, group_label, repetitions=10000):
