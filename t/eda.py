@@ -131,10 +131,10 @@ def apriori(df, column, classificationA, classificationB, withExtra=False):
 
 ## EDA: Viz
 
-def ecdf(df, col1, col2='', label=''):
+def ecdf(df, col1, col2='', xlabel='', ylabel=''):
 
     if (col2==''):
-        return s.plt_1ecdf( t.column(df, col1), label )
+        return s.plt_1ecdf( t.column(df, col1), xlabel, ylabel)
     else: 
         return s.plt_2ecdf( t.column(df, col1), t.column(df, col2), _xlabel=label )
 

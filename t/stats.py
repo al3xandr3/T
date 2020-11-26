@@ -1548,7 +1548,7 @@ def _seed_numba(seed):
 # ----------------------- 
 
 
-def plt_1ecdf(dta1, _xlabel=''):
+def plt_1ecdf(dta1, _xlabel='', _ylabel=''):
     import matplotlib.pyplot as plt
     # Generate x and y values for plotting ECDFs
     x_wt, y_wt   = ecdf(dta1)
@@ -1577,7 +1577,7 @@ def plt_1ecdf(dta1, _xlabel=''):
     # Make a legend, label axes, and show plot
     #_ = plt.legend((legend1, legend2))
     _ = plt.xlabel(_xlabel)
-    _ = plt.ylabel('ECDF')
+    _ = plt.ylabel(f"{_ylabel} (ECDF)")
 
     #plt.show()
 
