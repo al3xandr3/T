@@ -56,9 +56,10 @@ def ten_buckets(df, column1, doPlot=True):
 
 
 ## APRIORI
-def apriori(df, column, classificationA, classificationB, withExtra=False):
+# reference: https://engineering.fb.com/2021/02/09/developer-tools/minesweeper/
+def diff_patterns(df, column, classificationA, classificationB, withExtra=False):
     
-    from mlxtend.preprocessing import TransactionEncoder
+    #from mlxtend.preprocessing import TransactionEncoder
     from mlxtend.frequent_patterns import apriori
     from mlxtend.frequent_patterns import association_rules
 
@@ -78,54 +79,76 @@ def apriori(df, column, classificationA, classificationB, withExtra=False):
     # dataset cleanup
     Dataset = Dataset.fillna("NA")
     
-    
-    ## Transform into columns
-    #dt = df.values.tolist()
-    #te     = TransactionEncoder()
-    #te_ary = te.fit(dt).transform(dt)
-    #df     = pd.DataFrame(te_ary, columns=te.columns_)
-    
-    
+
     df = pd.get_dummies(Dataset, prefix_sep=":")
-    
     
     # frequent item sets, in same basket (with a min support)
     frequent_itemsets = apriori(df, min_support=0.2, use_colnames=True)
     frequent_itemsets['length'] = frequent_itemsets['itemsets'].apply(lambda x: len(x))
     frequent_itemsets
     
-    
     rules = association_rules(frequent_itemsets, metric="lift", min_threshold=0.01)
     
     cola_rules = t.where(rules, "consequents", {cola})
-    
+
     # Count occurences
     for index, row in cola_rules.iterrows():
-        #print(list(row['antecedents']), list(row['consequents']))
-        valu = t.where(df, cola, True)
-        #print(valu.shape[0])
+        dt_w = df
+        dt_wout = df
+        #print(list(row['antecedents']))
         for ant in list(row['antecedents']):
-            valu  = t.where(valu, ant, True)
-        cola_rules.at[index,'A_cnt'] = valu.shape[0]
+            dt_w = t.where(dt_w, ant, True)
+            #dt_wout = t.where(dt_wout, ant, False)
+
+        dt_wout = pd.merge(df, dt_w, how='outer', indicator=True)
+        dt_wout = t.where(dt_wout, "_merge", "left_only")
         
-        valu2 = t.where(df, colb, True)
-        for ant in list(row['antecedents']):
-            valu2 = t.where(valu2, ant, True)
-        cola_rules.at[index,'B_cnt'] = valu2.shape[0]
-        
-    cola_rules["A_ratio"] = cola_rules["A_cnt"] / (cola_rules["B_cnt"]+cola_rules["A_cnt"])
+        #print(dt_w)
+        #print(dt_wout)
+
+        tp    = t.where(dt_w,    cola, True)
+        fn    = t.where(dt_wout, cola, True)
+        fp    = t.where(dt_w,    colb, True)
+        tn    = t.where(dt_wout, colb, True)
+
+        cola_rules.at[index,'TP'] = tp.shape[0]
+        cola_rules.at[index,'FN'] = fn.shape[0]
+        cola_rules.at[index,'FP'] = fp.shape[0]
+        cola_rules.at[index,'TN'] = tn.shape[0]
+            
+    output = cola_rules
     
+    total     = len(df)
+    precision = output["TP"] / (output["TP"] + output["FP"])
+    recall    = output["TP"] / (output["TP"] + output["FN"])
+    accuracy  = (output["TP"] + output["TN"]) / total
+    f1  = 2*((precision*recall)/(precision+recall))
+    f05 = (1.25 * precision * recall) / (0.25 * precision + recall)
+    f2  = (5 * precision * recall) / (4 * precision + recall)
+
+    output["total"] = total
+
+    output["precision"] = precision
+    output["recall"]    = recall
+    output["accuracy"]  = accuracy
+    output["f1"] = f1
+    output["f05"] = f05
+    output["f2"] = f2
     
-    output = t.sort(cola_rules, "A_ratio", ascending=False)
-    
-    output = t.relabel(output, "A_cnt", f"{ClassificationA}_cnt")
-    output = t.relabel(output, "B_cnt", f"{ClassificationB}_cnt")
+    output = t.relabel(output, "A_cnt",   f"{ClassificationA}_cnt")
+    output = t.relabel(output, "B_cnt",   f"{ClassificationB}_cnt")
     output = t.relabel(output, "A_ratio", f"{ClassificationA}_ratio")
+     
+    output_clean = output.drop(['consequents', 'antecedent support', 'consequent support', 'support', 'confidence', 'lift', 'leverage', 'conviction', 'total'], axis=1)
+    output_clean = t.relabel(output_clean,"antecedents", "pattern")
+    
+    output_clean = t.sort(output_clean, "f1", ascending=False)
     
     if withExtra:
-        return output, rules   
+        return output_clean, rules   
     else: 
-        return output
+        return output_clean
+
 
 
 
