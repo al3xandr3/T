@@ -1685,6 +1685,49 @@ def hypothesis_diff(dta1, dta2):
   }
 
 
+# https://www.inferentialthinking.com/chapters/12/1/AB_Testing#Permutation-Test
+# https://www.linkedin.com/pulse/20140603072945-29806983-net-promoter-score-nps-confidence-interval-of-nps
+# https://towardsdatascience.com/bootstrapping-vs-permutation-testing-a30237795970
+def hypothesis_perm_diff(sample_1, sample_2, base_stat_func, num_iter):
+    
+    # initialize the list for the test statistic replicate
+    differences = []
+    # iterate for the specified number of iterations
+    for i in range(num_iter):
+        # concatenate the two samples into one
+        samples_app = sample_1 + sample_2
+        # permute the entire appended set (making this complete combined resampling WITHOUT REPLACEMENT)
+        samples_perm = np.random.permutation(samples_app)
+        # create the hypothesized samples by:
+        #  pretending that the first len(sample_1) elements is the first sample
+        sample_1_hyp = samples_perm[:len(sample_1)]
+        #  and the rest is the second sample
+        sample_2_hyp = samples_perm[ len(sample_2):]
+        # compute the test statistic replicate and append it to the list of permutation replicates
+        differences += [base_stat_func(sample_1_hyp) - base_stat_func(sample_2_hyp)]   
+
+    odiff = base_stat_func(sample_1) - base_stat_func(sample_2)
+
+    ## Chart
+    _ = t.histogram(pd.DataFrame(differences, columns=['Difference Between Groups']) , 'Difference Between Groups', xlabel='Difference Between Groups')
+    _.axvline(odiff, color='red', linestyle='dashed', linewidth=1)
+         
+    # Compute p-value: p
+    p = sum(np.abs(differences) >= np.abs(odiff)) / len(differences)
+    #p = 2*min(p, 1-p) # both sides
+
+    return {
+        'Observed Difference': round(odiff,3)
+        ,'func(sample1)': base_stat_func(sample_1)
+        ,'func(sample2)': base_stat_func(sample_2)
+        ,'p-value': p
+        ,'decision': "No significant difference" if p>0.05 else "Significant Difference"
+        #,'Null Hypothesis Bootstrap Differences': differences   
+}
+#hypothesis_perm_diff = hypothesis_perm_diff([2,3,1,2,3,1], [1,2,3,4,5], np.median, int(1e3))
+
+
+
 # https://www.inferentialthinking.com/chapters/12/1/AB_Testing
 def hypothesis_mean_diff(df, label, group_label, repetitions=10000):
     

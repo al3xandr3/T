@@ -157,16 +157,14 @@ def grid_search(estimator, x_train, y_train, param_grid, scoring=None, n_jobs=-1
     return classifier
 
     ## Call like so:        
-    #param_grid={'n_estimators':    [1, 3], 
-    #            'learning_rate':   [0.1, 0.05],
-    #            'max_depth':       [2,10], 
+    #param_grid={'n_estimators':    [1, 3, 20, 100], 
+    #            'learning_rate':   [0.1, 0.05, 5, 15],
+    #            'max_depth':       [2,10,30], 
     #            'min_samples_leaf':[3,17], 
     #            'max_features':    [1.0,0.1]
     #           }
-    #n_jobs=4
+    #t.grid_search(GradientBoostingClassifier(), X_train, y_train.values.ravel(), param_grid, scoring='f1', n_jobs=-1, cv=10)
 
-    ## Let's fit GBRT to the digits training dataset by calling the function we just created.
-    #cv, best_est = GradientBooster(param_grid, n_jobs)
 
 
     

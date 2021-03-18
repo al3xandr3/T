@@ -57,7 +57,7 @@ def ten_buckets(df, column1, doPlot=True):
 
 ## APRIORI
 # reference: https://engineering.fb.com/2021/02/09/developer-tools/minesweeper/
-def diff_patterns(df, column, classificationA, classificationB, withExtra=False):
+def diff_patterns(df, column, classificationA, classificationB, withExtra=False, _min_support=0.2, _min_threshold=0.01):
     
     #from mlxtend.preprocessing import TransactionEncoder
     from mlxtend.frequent_patterns import apriori
@@ -83,11 +83,11 @@ def diff_patterns(df, column, classificationA, classificationB, withExtra=False)
     df = pd.get_dummies(Dataset, prefix_sep=":")
     
     # frequent item sets, in same basket (with a min support)
-    frequent_itemsets = apriori(df, min_support=0.2, use_colnames=True)
+    frequent_itemsets = apriori(df, min_support=_min_support, use_colnames=True)
     frequent_itemsets['length'] = frequent_itemsets['itemsets'].apply(lambda x: len(x))
     frequent_itemsets
     
-    rules = association_rules(frequent_itemsets, metric="lift", min_threshold=0.01)
+    rules = association_rules(frequent_itemsets, metric="lift", min_threshold=_min_threshold)
     
     cola_rules = t.where(rules, "consequents", {cola})
 
@@ -119,6 +119,10 @@ def diff_patterns(df, column, classificationA, classificationB, withExtra=False)
     output = cola_rules
     
     total     = len(df)
+    
+    if 'TP' not in output.columns:
+        return "Empty"
+    
     precision = output["TP"] / (output["TP"] + output["FP"])
     recall    = output["TP"] / (output["TP"] + output["FN"])
     accuracy  = (output["TP"] + output["TN"]) / total
