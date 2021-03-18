@@ -1709,7 +1709,7 @@ def hypothesis_perm_diff(sample_1, sample_2, base_stat_func, num_iter):
     odiff = base_stat_func(sample_1) - base_stat_func(sample_2)
 
     ## Chart
-    _ = t.histogram(pd.DataFrame(differences, columns=['Difference Between Groups']) , 'Difference Between Groups', xlabel='Difference Between Groups')
+    _ = eda.histogram(pd.DataFrame(differences, columns=['Difference Between Groups']) , 'Difference Between Groups', xlabel='Difference Between Groups')
     _.axvline(odiff, color='red', linestyle='dashed', linewidth=1)
          
     # Compute p-value: p
