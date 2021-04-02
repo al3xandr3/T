@@ -70,7 +70,6 @@ def diff_patterns(df, column, classificationA, classificationB, withExtra=False,
     ClassificationB = classificationB
     # Other filtering parameters
 
-
     cola = f"{Column}:{ClassificationA}"
     colb = f"{Column}:{ClassificationB}"
     
@@ -79,8 +78,7 @@ def diff_patterns(df, column, classificationA, classificationB, withExtra=False,
     # dataset cleanup
     Dataset = Dataset.fillna("NA")
     
-
-    df = pd.get_dummies(Dataset, prefix_sep=":")
+    df = pd.get_dummies(Dataset.astype(str), prefix_sep=":")
     
     # frequent item sets, in same basket (with a min support)
     frequent_itemsets = apriori(df, min_support=_min_support, use_colnames=True)
@@ -147,9 +145,11 @@ def diff_patterns(df, column, classificationA, classificationB, withExtra=False,
     output_clean = t.relabel(output_clean,"antecedents", "pattern")
     
     output_clean = t.sort(output_clean, "f1", ascending=False)
+    output_clean["rules_count"] = output_clean["pattern"].apply(lambda x: len(x))
+    #rules = t.sort(rules, "f1", ascending=False)
     
     if withExtra:
-        return output_clean, rules   
+        return output_clean, cola_rules   
     else: 
         return output_clean
 
